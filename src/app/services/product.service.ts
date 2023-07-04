@@ -28,6 +28,12 @@ export class ProductService {
         return this.getProducts(searchUrl)
     }
 
+    getProduct(productId: number): Observable<Product> {
+        const searchUrl = `${this.baseUrl}/${productId}`
+
+        return this.httpClient.get<Product>(searchUrl)
+    }
+
     searchProducts(keyword: string) {
         const searchUrl = `${this.baseUrl}/search/findByNameContainingIgnoreCase?name=${keyword}`
 
