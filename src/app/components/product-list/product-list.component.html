@@ -14,7 +14,25 @@
                         <a href="#" class="primary-btn">Add to cart</a>
                     </div>
                 </div>
-                <div *ngIf="products?.length == 0" class="alert alert-warning" role="alert">There's no product with the given parameters.</div>
+                <div *ngIf="products?.length == 0" class="alert alert-warning" role="alert">There's no product with the
+                    given parameters.</div>
+            </div>
+            <!-- Right here -->
+            <div class="footer-pagination">
+                <div class="row">
+                    <div class="col-md-6"></div>
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-9" style="padding-left: 30%;">
+                                <ngb-pagination
+                                    [(page)]="pageNumber" [pageSize]="pageSize"
+                                    [collectionSize]="totalElements"
+                                    (pageChange)="listProducts()"
+                                ></ngb-pagination>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

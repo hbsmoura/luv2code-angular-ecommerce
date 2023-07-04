@@ -11,8 +11,13 @@ import { ProductService } from 'src/app/services/product.service';
 export class ProductListComponent implements OnInit {
 
     products: Product[] = []
+    previousCategoryId = 1
     currentCategoryId = 1
     searchMode = false
+
+    pageNumber = 1
+    pageSize = 10
+    totalElements = 0
 
     constructor(
         private productService: ProductService,
@@ -39,7 +44,18 @@ export class ProductListComponent implements OnInit {
         this.currentCategoryId =
             hasCategoryId ? +this.route.snapshot.paramMap.get('id')! : 1
 
-        this.productService.getProductList(this.currentCategoryId).subscribe(data => this.products = data)
+        if(this.previousCategoryId != this.currentCategoryId) this.pageNumber = 1
+
+        this.previousCategoryId = this.currentCategoryId
+
+        this.productService
+            .getProductListPaginate(this.pageNumber - 1, this.pageSize, this.currentCategoryId)
+            .subscribe(data => {
+                this.products = data._embedded.products
+                this.pageNumber = data.page.number + 1
+                this.pageSize = data.page.size
+                this.totalElements = data.page.totalElements
+            })
     }
 
     handleSearchProducts() {
