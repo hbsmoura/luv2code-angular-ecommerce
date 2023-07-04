@@ -16,7 +16,7 @@ export class ProductListComponent implements OnInit {
     searchMode = false
 
     pageNumber = 1
-    pageSize = 10
+    pageSize = 5
     totalElements = 0
 
     constructor(
@@ -63,6 +63,12 @@ export class ProductListComponent implements OnInit {
         this.productService.searchProducts(keyword).subscribe(
             data => this.products = data
         )
+    }
+
+    updatePageSize(pageSize: string) {
+        this.pageSize = +pageSize
+        this.pageNumber = 1
+        this.listProducts()
     }
 
 }
