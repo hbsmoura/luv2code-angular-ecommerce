@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { Country } from 'src/app/common/country';
+import { State } from 'src/app/common/state';
 import { Luv2ShopFormService } from 'src/app/services/luv2-shop-form.service';
 
 @Component({
@@ -15,6 +17,10 @@ export class CheckoutComponent implements OnInit {
 
     creditCardYears: number[] = []
     creditCardMonths: number[] = []
+
+    countries: Country[] = []
+    shippingAddressStates: State[] = []
+    billingAddressStates: State[] = []
 
     constructor(
         private formBuilder: FormBuilder,
@@ -53,9 +59,37 @@ export class CheckoutComponent implements OnInit {
 
     ngOnInit() {
         this.luv2ShopFormService.getCreditCardYears()
-            .subscribe(data => this.creditCardYears = data)
+            .subscribe(data => {
+                this.creditCardYears = data
+                this.checkoutFormGroup.get('creditCard')?.get('expirationYear')?.setValue(data[0])
+            })
 
         this.updateExpirationMonth()
+
+        // populate countries
+        this.luv2ShopFormService.getCountries().subscribe(data => {
+            this.countries = data
+        })
+    }
+
+    getStates(formGroupName: string) {
+        const formGroup = this.checkoutFormGroup.get(formGroupName)
+
+        const countryCode = formGroup?.value.country.code
+
+        this.luv2ShopFormService.getStates(countryCode).subscribe(data => {
+            switch (formGroupName) {
+                case 'shippingAddress':
+                    this.shippingAddressStates = data
+                    break;
+
+                case 'billingAddress':
+                    this.billingAddressStates = data
+                    break;
+            }
+
+            formGroup?.get('state')?.setValue(data[0])
+        })
     }
 
     onSubmit() {
@@ -67,17 +101,20 @@ export class CheckoutComponent implements OnInit {
         if (event.target.checked) {
             this.checkoutFormGroup.controls['billingAddress']
                 .setValue(this.checkoutFormGroup.controls['shippingAddress'].value)
+
+            this.billingAddressStates = this.shippingAddressStates
+
             return
         }
 
         this.checkoutFormGroup.controls['billingAddress'].reset()
+        this.billingAddressStates = []
     }
 
     updateExpirationMonth() {
         const currentDate = new Date();
 
         let selectedYear = +this.checkoutFormGroup.get('creditCard')?.value.expirationYear
-        selectedYear = selectedYear < currentDate.getFullYear() ? currentDate.getFullYear() : selectedYear
 
         let startMonth = selectedYear === currentDate.getFullYear() ? currentDate.getMonth() + 1 : 1
 
