@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Country } from 'src/app/common/country';
 import { State } from 'src/app/common/state';
 import { Luv2ShopFormService } from 'src/app/services/luv2-shop-form.service';
+import { Luv2ShopValidators } from 'src/app/validators/luv2-shop-validators';
 
 @Component({
     selector: 'app-checkout',
@@ -28,9 +29,18 @@ export class CheckoutComponent implements OnInit {
     ) {
         this.checkoutFormGroup = formBuilder.group({
             customer: this.formBuilder.group({
-                firstName: [''],
-                lastName: [''],
-                email: ['']
+                firstName: new FormControl('', [
+                    Validators.required, Validators.minLength(2),
+                    Luv2ShopValidators.notOnlyWhitespace
+                ]),
+                lastName: new FormControl('', [
+                    Validators.required, Validators.minLength(2),
+                    Luv2ShopValidators.notOnlyWhitespace
+                ]),
+                email: new FormControl('', [
+                    Validators.required,
+                    Validators.pattern('^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$')
+                ])
             }),
             shippingAddress: this.formBuilder.group({
                 street: [''],
@@ -72,6 +82,10 @@ export class CheckoutComponent implements OnInit {
         })
     }
 
+    get firstName() { return this.checkoutFormGroup.get('customer.firstName') }
+    get lastName() { return this.checkoutFormGroup.get('customer.lastName') }
+    get email() { return this.checkoutFormGroup.get('customer.email') }
+
     getStates(formGroupName: string) {
         const formGroup = this.checkoutFormGroup.get(formGroupName)
 
@@ -93,8 +107,9 @@ export class CheckoutComponent implements OnInit {
     }
 
     onSubmit() {
-        console.log('Handle submit button')
-        console.log(this.checkoutFormGroup.get('customer')!.value)
+        if (this.checkoutFormGroup.invalid) {
+            this.checkoutFormGroup.markAllAsTouched()
+        }
     }
 
     copyShippingAddressToBillingAddress(event: any) {
